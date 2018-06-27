@@ -8,6 +8,12 @@ interface UIElement {
 
     foo?: boolean
 
+    props: {
+        children?: any
+    }
+
+    state: {}
+
     render(): ReactElement<any>
 }
 

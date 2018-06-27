@@ -11,8 +11,11 @@
 	"dependencies": {
 		"@types/react": "^16.4.1",
 		"@types/react-dom": "^16.0.6",
+		"prop-types": "^15.6.2",
 		"react": "^16.4.1",
-		"react-dom": "^16.4.1"
+		"react-dom": "^16.4.1",
+		"react-portal-frame": "^1.0.6",
+		"styled-components": "^3.3.3"
 	},
 	"devDependencies": {
 		"@babel/core": "7.0.0-beta.51",
