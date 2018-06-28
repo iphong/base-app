@@ -11616,6 +11616,18 @@ const container = global.container = new container_x__WEBPACK_IMPORTED_MODULE_4_
   foo: 'bar'
 });
 const Wrapper = styled_components__WEBPACK_IMPORTED_MODULE_2__["default"].div`
+	user-select: none;
+	height: 70%;
+	width: 70%;
+	position: fixed;
+	top: 0;
+	left: 0;
+	background: lightgray;
+
+	&,
+	* {
+		outline: none;
+	}
 	.drag-btn {
 		padding: 5px;
 		background: red;
@@ -11627,16 +11639,38 @@ const Wrapper = styled_components__WEBPACK_IMPORTED_MODULE_2__["default"].div`
 	}
 	#overlay {
 		position: absolute;
-		background: rgba(0, 0, 0, 0.76);
+		outline: 2px solid black;
 		pointer-events: none;
 	}
+`;
+const Foo = styled_components__WEBPACK_IMPORTED_MODULE_2__["default"].div`
+	background: grey;
+`;
+const Wrapper2 = styled_components__WEBPACK_IMPORTED_MODULE_2__["default"].div`
+	color: ${props => props.foo ? 'red' : 'green'};
+	${Foo} {
+		background: lightcoral;
+	}
+`;
+const Wrapper3 = Wrapper2.extend`
+	
 `;
 
 class App extends react__WEBPACK_IMPORTED_MODULE_1__["Component"] {
   constructor(...args) {
     super(...args);
 
-    _defineProperty(this, "handleDragStart", e => {// const id = e.target.getAttribute('id')
+    _defineProperty(this, "handleFoo", () => {
+      console.log('fdsfkskda glks');
+    });
+
+    _defineProperty(this, "handleDragStart", e => {
+      const target = e.target; // e.dataTransfer.setDragImage(e.target, e.nativeEvent.offsetX, e.nativeEvent.offsetY)
+
+      setTimeout(() => {
+        target.style.opacity = 0;
+        this.overlayRef.current.style.visibility = 'hidden';
+      }); // const id = e.target.getAttribute('id')
       // e.dataTransfer.setData('DownloadURL', `application/json:text:` + window.URL.createObjectURL(
       // 	new Blob(['{"type": "Heading", id: 10}'], {
       // 		type: 'application/json'
@@ -11652,44 +11686,74 @@ class App extends react__WEBPACK_IMPORTED_MODULE_1__["Component"] {
       // console.log(e.dataTransfer.getData('plain/text'))
     });
 
+    _defineProperty(this, "handleDragEnd", e => {
+      e.target.style.opacity = '';
+      this.overlayRef.current.style.visibility = 'visible';
+    });
+
     _defineProperty(this, "handleDrop", e => {
       e.preventDefault();
       const evt = e.nativeEvent;
-      const el = evt.path.find(el => el.matches && el.matches('[data-element]'));
+      const el = e.target.closest('.drag-btn');
 
       if (el) {
         console.log(el);
         const rect = el.getBoundingClientRect();
-        console.log(rect.left, rect.top, rect.width, rect.height, evt.pageX, evt.pageY);
+        console.log(rect.left, rect.top, rect.width, rect.height, evt.offsetX, evt.offsetY);
       } // console.log(e.dataTransfer.getData('application/json'))
 
     });
 
-    _defineProperty(this, "handleClick", e => {
-      e.stopPropagation();
-      const evt = e.nativeEvent;
-      const el = evt.path.find(el => el.matches && el.matches('.drag-btn'));
+    _defineProperty(this, "handleFocus", e => {
+      const el = e.target.closest('.drag-btn'); // const el = e.target
 
       if (el) {
-        console.log(el);
         const rect = el.getBoundingClientRect();
-        this.overlayRef.current.style.top = rect.top + 'px';
-        this.overlayRef.current.style.left = rect.left + 'px';
-        this.overlayRef.current.style.width = rect.width + 'px';
-        this.overlayRef.current.style.height = rect.height + 'px';
+        Object.assign(this.overlayRef.current.style, {
+          visibility: 'visible',
+          top: rect.top + 'px',
+          left: rect.left + 'px',
+          width: rect.width + 'px',
+          height: rect.height + 'px'
+        });
+      } else {
+        Object.assign(this.overlayRef.current.style, {
+          visibility: 'hidden'
+        });
       }
+    });
+
+    _defineProperty(this, "handleChange", e => {
+      console.log('change', e.nativeEvent);
     });
 
     _defineProperty(this, "overlayRef", react__WEBPACK_IMPORTED_MODULE_1__["createRef"]());
   }
 
+  componentDidMount() {
+    event_x__WEBPACK_IMPORTED_MODULE_3___default.a.on(this, 'foo', this.handleFoo);
+  }
+
   render() {
     return react__WEBPACK_IMPORTED_MODULE_1__["createElement"](Wrapper, {
+      id: "wrapper",
       onDragStartCapture: this.handleDragStart,
       onDragOverCapture: this.handleDragOver,
+      onDragEndCapture: this.handleDragEnd,
       onDropCapture: this.handleDrop,
-      onClickCapture: this.handleClick
-    }, react__WEBPACK_IMPORTED_MODULE_1__["createElement"](container_x__WEBPACK_IMPORTED_MODULE_4__["Subscribe"], {
+      onFocusCapture: this.handleFocus,
+      onChange: this.handleChange,
+      ref: el => this.wrapper = el,
+      tabIndex: 1
+    }, react__WEBPACK_IMPORTED_MODULE_1__["createElement"](Foo, null, "normal"), react__WEBPACK_IMPORTED_MODULE_1__["createElement"](Wrapper2, {
+      foo: true
+    }, react__WEBPACK_IMPORTED_MODULE_1__["createElement"](Foo, {
+      foo: true
+    }, "foo")), react__WEBPACK_IMPORTED_MODULE_1__["createElement"](Wrapper2, {
+      bar: true
+    }, "bar"), react__WEBPACK_IMPORTED_MODULE_1__["createElement"](Wrapper3, {
+      foo: true
+    }, "3 has foo"), react__WEBPACK_IMPORTED_MODULE_1__["createElement"](Wrapper3, null, "3 no foo"), react__WEBPACK_IMPORTED_MODULE_1__["createElement"](container_x__WEBPACK_IMPORTED_MODULE_4__["Subscribe"], {
       to: container,
       bind: ['foo']
     }, foo => {
@@ -11700,34 +11764,37 @@ class App extends react__WEBPACK_IMPORTED_MODULE_1__["Component"] {
     }), "This is a demo application", react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", {
       id: "a",
       className: "drag-btn",
+      tabIndex: 1,
       draggable: true
     }, "Item 1"), react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", {
       id: "b",
       className: "drag-btn",
+      tabIndex: 1,
       draggable: true
     }, "Item 2"), react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", {
-      "data-element": true,
       className: "drag-btn",
+      tabIndex: 1,
       draggable: true
     }, react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", {
-      "data-element": true,
       id: "c",
       className: "drag-btn",
-      onClick: e => {
-        console.log('btn clicked');
-      }
+      tabIndex: 1
     }, react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("span", null, react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("b", null, "Item 3"))), react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", {
       id: "d",
       className: "drag-btn",
+      tabIndex: 1,
       draggable: true
     }, "Item 4")), react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", {
-      className: "drag-btn"
-    }, "Item 2"));
+      className: "drag-btn",
+      tabIndex: 1
+    }, "Item 2", react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("input", null)));
   }
 
 }
 
-Object(react_dom__WEBPACK_IMPORTED_MODULE_0__["render"])(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](App, null), document.getElementById('app'));
+Object(react_dom__WEBPACK_IMPORTED_MODULE_0__["render"])(react__WEBPACK_IMPORTED_MODULE_1__["createElement"](App, {
+  ref: el => global.app = el
+}), document.getElementById('app'));
 
 class A {
   constructor() {
@@ -11766,7 +11833,45 @@ console.time();
 event_x__WEBPACK_IMPORTED_MODULE_3___default.a.emit(a, 'foo').then((...args) => {
   console.timeEnd();
   console.log(...args);
-});
+}); // const elementsList = [
+// 	{ type: 'Item1' },
+// 	{ type: 'Item2' }
+// ]
+//
+// const elements = {
+// 	Item1: class Item1 extends React.Component {
+// 		render() {
+// 			return <li {...this.props}>Item 1</li>
+// 		}
+// 	},
+// 	Item2: class Item2 extends React.Component {
+// 		render() {
+// 			return <li {...this.props}>Item 2</li>
+// 		}
+// 	}
+// }
+//
+// class ElementsList extends React.Component {
+// 	componentDidMount() {
+// 		global.list = this
+// 	}
+// 	render() {
+// 		return <ul>
+// 			{elementsList.map((item, i) => {
+// 				const Item = elements[item.type]
+// 				return <Item key={i} {...item} />
+// 			})}
+// 			<button onClick={e => {
+// 				elementsList.push({ type: 'Item1' })
+// 				this.forceUpdate()
+// 			}}>Add Element</button>
+// 		</ul>
+// 	}
+// }
+//
+// render(<ElementsList />, document.getElementById('app'))
+//
+// global.elementList = elementsList
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../node_modules/webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
 
 /***/ })
