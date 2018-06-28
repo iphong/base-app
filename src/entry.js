@@ -48,9 +48,7 @@ const Wrapper2 = styled.div`
 		background: lightcoral;
 	}
 `
-const Wrapper3 = Wrapper2.extend`
-	
-`
+const Wrapper3 = Wrapper2.extend``
 
 class App extends React.Component {
 	componentDidMount() {
@@ -208,7 +206,6 @@ events.emit(a, 'foo').then((...args) => {
 	console.timeEnd()
 	console.log(...args)
 })
-
 
 // const elementsList = [
 // 	{ type: 'Item1' },

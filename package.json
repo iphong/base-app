@@ -10,7 +10,7 @@
 	"license": "ISC",
 	"dependencies": {
 		"container-x": "^1.0.2",
-		"create-react-context": "^0.2.2",
+		"eslint-plugin-typescript": "^0.12.0",
 		"event-x": "^1.0.8",
 		"prop-types": "^15.6.2",
 		"react": "^16.4.1",

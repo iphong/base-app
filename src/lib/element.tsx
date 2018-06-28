@@ -1,6 +1,5 @@
 import UIElement from '../interfaces/UIElement'
 import * as React from 'react'
-import ReactDOM from 'react-dom'
 
 /**
  *
@@ -18,28 +17,24 @@ export async function removeElement(target: UIElement): Promise<boolean> {
 }
 
 type data = {
-    id: string,
-    type: string,
-    children: [number],
-    style: {},
-    data: {}
+	id: string,
+	type: string,
+	children: [number],
+	style: {},
+	data: {}
 }
 const store = [
-    {
-        id: '13124',type: 'Example', data: {foo: 'bar'}
-    }
+	{
+		id: '13124', type: 'Example', data: {foo: 'bar'}
+	}
 ]
 const createElement = (settings) => (Element) => {
 
-    return class ElementWrapper extends React.Component {
-        componentDidMount() {
-            const el = ReactDOM.findDOMNode(this)
-            el.classList.add('fd3255-12532d')
-            el.addAttribute('foo', 'bar')
-        }
-        render() {
-            const data = store[0]
-	        return <div></div>
-        }
-    }
+	return class ElementWrapper extends React.Component {
+
+		render() {
+			const data = store[0]
+			return <div></div>
+		}
+	}
 }
