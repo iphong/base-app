@@ -15,7 +15,7 @@ interface Data {
 }
 
 export default class Example extends React.Component<Data, Data>
-	implements UIElement {
+	implements Foo {
 	static defaultProps = {};
 
 	state = this.props;
