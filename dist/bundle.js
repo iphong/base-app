@@ -96,6 +96,124 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
+/***/ "./node_modules/container-x/src/container-x.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/container-x/src/container-x.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+const react_1 = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+class Container {
+  constructor(state) {
+    this.listeners = [];
+    this.state = state;
+  }
+
+  setState(nextState, callback) {
+    this.state = Object.assign({}, this.state, nextState);
+    return Promise.all(this.listeners.map(fn => fn(nextState)));
+  }
+
+  subscribe(fn) {
+    this.listeners.push(fn);
+  }
+
+  unsubscribe(fn) {
+    this.listeners = this.listeners.filter(f => f !== fn);
+  }
+
+}
+
+exports.Container = Container;
+
+class Subscribe extends react_1.Component {
+  constructor() {
+    super(...arguments);
+
+    this.onUpdate = changes => {
+      return new Promise(resolve => {
+        Object.keys(changes).some(k => this.props.bind.includes(k)) ? this.setState({}, resolve) : resolve();
+      });
+    };
+  }
+
+  componentDidMount() {
+    this.props.to.subscribe(this.onUpdate);
+  }
+
+  componentWillUnmount() {
+    this.props.to.unsubscribe(this.onUpdate);
+  }
+
+  render() {
+    return this.props.children(...this.props.bind.map(p => this.props.to.state[p]));
+  }
+
+}
+
+exports.Subscribe = Subscribe;
+
+/***/ }),
+
+/***/ "./node_modules/event-x/src/event-x.js":
+/*!*********************************************!*\
+  !*** ./node_modules/event-x/src/event-x.js ***!
+  \*********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+const listeners = Symbol("listeners");
+
+function on(target, type, callback) {
+  if (!target[listeners]) target[listeners] = [];
+  target[listeners].push({
+    type,
+    callback
+  });
+  return target;
+}
+
+exports.on = on;
+
+function off(target, type) {
+  if (target[listeners]) target[listeners] = !type ? [] : target[listeners].filter(listener => listener.type !== type && listener.callback !== type);
+  return target;
+}
+
+exports.off = off;
+
+function emit(target, type, ...args) {
+  return new Promise((resolve, reject) => {
+    if (target[listeners]) Promise.all(target[listeners].map(listener => {
+      if (listener.type === type) return Reflect.apply(listener.callback, null, args);
+    })).then(resolve).catch(reject);else resolve();
+  });
+}
+
+exports.emit = emit;
+exports.default = {
+  on,
+  off,
+  emit
+};
+
+/***/ }),
+
 /***/ "./node_modules/fbjs/lib/ExecutionEnvironment.js":
 /*!*******************************************************!*\
   !*** ./node_modules/fbjs/lib/ExecutionEnvironment.js ***!
@@ -11464,54 +11582,6 @@ module.exports = function (originalModule) {
 
 /***/ }),
 
-/***/ "./src/elements/Body.tsx":
-/*!*******************************!*\
-  !*** ./src/elements/Body.tsx ***!
-  \*******************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Body; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-
-
-class Body extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
-  render() {
-    return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("body", null, "This is body");
-  }
-
-}
-
-/***/ }),
-
-/***/ "./src/elements/Page.tsx":
-/*!*******************************!*\
-  !*** ./src/elements/Page.tsx ***!
-  \*******************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Page; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _lib_page__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../lib/page */ "./src/lib/page.tsx");
-
-
-
-class Page extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
-  render() {
-    return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("div", null, Object(_lib_page__WEBPACK_IMPORTED_MODULE_1__["renderChildren"])(this));
-  }
-
-}
-
-/***/ }),
-
 /***/ "./src/entry.js":
 /*!**********************!*\
   !*** ./src/entry.js ***!
@@ -11525,8 +11595,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _ui_UIPage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ui/UIPage */ "./src/ui/UIPage.js");
-/* harmony import */ var styled_components__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! styled-components */ "./node_modules/styled-components/dist/styled-components.browser.es.js");
+/* harmony import */ var styled_components__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! styled-components */ "./node_modules/styled-components/dist/styled-components.browser.es.js");
+/* harmony import */ var event_x__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! event-x */ "./node_modules/event-x/src/event-x.js");
+/* harmony import */ var event_x__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(event_x__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var container_x__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! container-x */ "./node_modules/container-x/src/container-x.js");
+/* harmony import */ var container_x__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(container_x__WEBPACK_IMPORTED_MODULE_4__);
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /**
@@ -11538,7 +11611,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
 
-const Wrapper = styled_components__WEBPACK_IMPORTED_MODULE_3__["default"].div`
+
+const container = global.container = new container_x__WEBPACK_IMPORTED_MODULE_4__["Container"]({
+  foo: 'bar'
+});
+const Wrapper = styled_components__WEBPACK_IMPORTED_MODULE_2__["default"].div`
 	.drag-btn {
 		padding: 5px;
 		background: red;
@@ -11550,7 +11627,7 @@ const Wrapper = styled_components__WEBPACK_IMPORTED_MODULE_3__["default"].div`
 	}
 	#overlay {
 		position: absolute;
-		background: rgba(0,0,0,0.76);
+		background: rgba(0, 0, 0, 0.76);
 		pointer-events: none;
 	}
 `;
@@ -11559,8 +11636,8 @@ class App extends react__WEBPACK_IMPORTED_MODULE_1__["Component"] {
   constructor(...args) {
     super(...args);
 
-    _defineProperty(this, "handleDragStart", e => {
-      const id = e.target.getAttribute('id'); // e.dataTransfer.setData('DownloadURL', `application/json:text:` + window.URL.createObjectURL(
+    _defineProperty(this, "handleDragStart", e => {// const id = e.target.getAttribute('id')
+      // e.dataTransfer.setData('DownloadURL', `application/json:text:` + window.URL.createObjectURL(
       // 	new Blob(['{"type": "Heading", id: 10}'], {
       // 		type: 'application/json'
       // 	})
@@ -11578,7 +11655,7 @@ class App extends react__WEBPACK_IMPORTED_MODULE_1__["Component"] {
     _defineProperty(this, "handleDrop", e => {
       e.preventDefault();
       const evt = e.nativeEvent;
-      const el = e.nativeEvent.path.find(el => el.dataset.element == 1);
+      const el = evt.path.find(el => el.matches && el.matches('[data-element]'));
 
       if (el) {
         console.log(el);
@@ -11591,7 +11668,7 @@ class App extends react__WEBPACK_IMPORTED_MODULE_1__["Component"] {
     _defineProperty(this, "handleClick", e => {
       e.stopPropagation();
       const evt = e.nativeEvent;
-      const el = e.nativeEvent.path.find(el => el.matches('.drag-btn'));
+      const el = evt.path.find(el => el.matches && el.matches('.drag-btn'));
 
       if (el) {
         console.log(el);
@@ -11612,7 +11689,12 @@ class App extends react__WEBPACK_IMPORTED_MODULE_1__["Component"] {
       onDragOverCapture: this.handleDragOver,
       onDropCapture: this.handleDrop,
       onClickCapture: this.handleClick
-    }, react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", {
+    }, react__WEBPACK_IMPORTED_MODULE_1__["createElement"](container_x__WEBPACK_IMPORTED_MODULE_4__["Subscribe"], {
+      to: container,
+      bind: ['foo']
+    }, foo => {
+      return react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", null, "Foo ", foo);
+    }), react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", {
       id: "overlay",
       ref: this.overlayRef
     }), "This is a demo application", react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", {
@@ -11624,11 +11706,11 @@ class App extends react__WEBPACK_IMPORTED_MODULE_1__["Component"] {
       className: "drag-btn",
       draggable: true
     }, "Item 2"), react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", {
-      "data-element": "1",
+      "data-element": true,
       className: "drag-btn",
       draggable: true
     }, react__WEBPACK_IMPORTED_MODULE_1__["createElement"]("div", {
-      "data-element": "1",
+      "data-element": true,
       id: "c",
       className: "drag-btn",
       onClick: e => {
@@ -11669,110 +11751,23 @@ _defineProperty(A, "foo", 'bar');
 _defineProperty(A, "name", 'fdsfds');
 
 global.A = A;
+global.events = event_x__WEBPACK_IMPORTED_MODULE_3___default.a;
+const a = {};
+
+const handler = (delay = 1000, msg = '') => () => new Promise(resolve => {
+  setTimeout(() => {
+    resolve(msg);
+  }, delay);
+});
+
+event_x__WEBPACK_IMPORTED_MODULE_3___default.a.on(a, 'foo', handler(1000, 'Task 1'));
+event_x__WEBPACK_IMPORTED_MODULE_3___default.a.on(a, 'foo', handler(3000, 'Task 2'));
+console.time();
+event_x__WEBPACK_IMPORTED_MODULE_3___default.a.emit(a, 'foo').then((...args) => {
+  console.timeEnd();
+  console.log(...args);
+});
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../node_modules/webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
-
-/***/ }),
-
-/***/ "./src/lib/page.tsx":
-/*!**************************!*\
-  !*** ./src/lib/page.tsx ***!
-  \**************************/
-/*! exports provided: renderChildren */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "renderChildren", function() { return renderChildren; });
-function renderChildren(element) {
-  return element.props.children;
-}
-
-/***/ }),
-
-/***/ "./src/ui/UIPage.js":
-/*!**************************!*\
-  !*** ./src/ui/UIPage.js ***!
-  \**************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return UIPage; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _UISandbox__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./UISandbox */ "./src/ui/UISandbox.tsx");
-/* harmony import */ var _elements_Page__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../elements/Page */ "./src/elements/Page.tsx");
-/* harmony import */ var _elements_Body__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../elements/Body */ "./src/elements/Body.tsx");
-
-
-
-
-class UIPage extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
-  render() {
-    return react__WEBPACK_IMPORTED_MODULE_0__["createElement"](_UISandbox__WEBPACK_IMPORTED_MODULE_1__["default"], {
-      name: "PageFly Sandbox"
-    }, react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("head", null, react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("title", null, "Sandbox")), react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("body", null, react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("h3", null, "Hello")));
-  }
-
-}
-
-/***/ }),
-
-/***/ "./src/ui/UISandbox.tsx":
-/*!******************************!*\
-  !*** ./src/ui/UISandbox.tsx ***!
-  \******************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return UISandbox; });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
-/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_1__);
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-
-
-class UISandbox extends react__WEBPACK_IMPORTED_MODULE_0__["Component"] {
-  constructor(...args) {
-    super(...args);
-
-    _defineProperty(this, "state", {
-      root: null
-    });
-
-    _defineProperty(this, "frameEl", react__WEBPACK_IMPORTED_MODULE_0__["createRef"]());
-
-    _defineProperty(this, "onLoad", () => {
-      this.frameEl.current.contentDocument.write('<html>');
-      const root = this.frameEl.current.contentDocument.querySelector('html');
-      this.setState({
-        root
-      });
-    });
-  }
-
-  componentDidMount() {
-    this.frameEl.current.addEventListener('load', this.onLoad, true);
-  }
-
-  componentWillUnmount() {
-    this.frameEl.current.removeEventListener('load', this.onLoad, true);
-  }
-
-  render() {
-    return react__WEBPACK_IMPORTED_MODULE_0__["createElement"]("iframe", {
-      name: this.props.name,
-      srcDoc: "<html>",
-      ref: this.frameEl
-    }, this.state.root ? react_dom__WEBPACK_IMPORTED_MODULE_1__["createPortal"](this.props.children, this.state.root) : null);
-  }
-
-}
 
 /***/ })
 

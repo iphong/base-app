@@ -39,6 +39,7 @@ const createElement = (settings) => (Element) => {
         }
         render() {
             const data = store[0]
+	        return <div></div>
         }
     }
 }
