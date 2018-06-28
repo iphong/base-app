@@ -61,7 +61,7 @@ class App extends React.Component {
 	}
 	handleDragStart = e => {
 		const target = e.target
-		// e.dataTransfer.setDragImage(e.target, e.nativeEvent.offsetX, e.nativeEvent.offsetY)
+		e.dataTransfer.setDragImage(e.target, e.nativeEvent.offsetX, e.nativeEvent.offsetY)
 		setTimeout(() => {
 			target.style.opacity = 0
 			this.overlayRef.current.style.visibility = 'hidden'
